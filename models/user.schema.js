@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import AuthRoles from "../utils/authRoles";
+import JWT from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -29,4 +32,12 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+//Challane 1 : Encrypt the passowrd
+//use funciton not arrow function because this not work
+userSchema.pre("save", async function (next) {
+  if (!this.modified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
 export default mongoose.model("User", userSchema);
