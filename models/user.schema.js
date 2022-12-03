@@ -3,6 +3,7 @@ import AuthRoles from "../utils/authRoles";
 import JWT from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import config from "../config";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -35,7 +36,7 @@ const userSchema = new mongoose.Schema(
 //Challane 1 : Encrypt the passowrd
 //use funciton not arrow function because this not work
 userSchema.pre("save", async function (next) {
-  if (!this.modified("password")) return next();
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
@@ -58,6 +59,22 @@ userSchema.methods = {
         expiresIn: config.JWT_EXPIRY,
       }
     );
+  },
+
+  //Generating token and time and sending to user and database
+  generateForgetPasswordToken: function () {
+    const forgotToken = crypto.randomBytes(20).toString("hex");
+
+    //step 1: save to DB
+    //updating forgetPassword Token in database
+    this.forgetPasswordToken = crypto
+      .createHash("sha256")
+      .update(forgotToken)
+      .digest("hex");
+    //updating forgetPasswordExpiry Token in database
+    this.forgetPasswordExpiry = Date.now() + 20 * 60 * 1000;
+    //return values to user
+    return forgotToken;
   },
 };
 
