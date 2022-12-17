@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 //Challane 1 : Encrypt the passowrd
 //use funciton not arrow function because this not work
 userSchema.pre("save", async function (next) {
